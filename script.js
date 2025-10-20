@@ -70,6 +70,7 @@ $(function () {
             } else {
                 audio.currentTime = 0;
             }
+
             var countdown = self.partCount;
             while (countdown--) {
                 var newParticle = {
@@ -145,7 +146,6 @@ $(function () {
             var i = self.particles.length;
             while (i--) {
                 var p = self.particles[i];
-
                 var coordRand = rand(1, 3) - 1;
                 self.ctx.beginPath();
                 self.ctx.moveTo(
@@ -223,13 +223,11 @@ $(function () {
 
         self.updateFireworks = function () {
             var i = self.fireworks.length;
-
             while (i--) {
                 var f = self.fireworks[i];
                 self.ctx.lineWidth = f.lineWidth;
-
-                (vx = Math.cos(f.angle) * f.speed),
-                    (vy = Math.sin(f.angle) * f.speed);
+                var vx = Math.cos(f.angle) * f.speed,
+                    vy = Math.sin(f.angle) * f.speed;
                 f.speed *= 1 + f.acceleration;
                 f.coordLast[2].x = f.coordLast[1].x;
                 f.coordLast[2].y = f.coordLast[1].y;
@@ -238,37 +236,11 @@ $(function () {
                 f.coordLast[0].x = f.x;
                 f.coordLast[0].y = f.y;
 
-                if (f.startX >= f.targetX) {
-                    if (f.x + vx <= f.targetX) {
-                        f.x = f.targetX;
-                        f.hitX = true;
-                    } else {
-                        f.x += vx;
-                    }
-                } else {
-                    if (f.x + vx >= f.targetX) {
-                        f.x = f.targetX;
-                        f.hitX = true;
-                    } else {
-                        f.x += vx;
-                    }
-                }
+                if (Math.abs(f.x - f.targetX) < Math.abs(vx)) f.hitX = true;
+                else f.x += vx;
 
-                if (f.startY >= f.targetY) {
-                    if (f.y + vy <= f.targetY) {
-                        f.y = f.targetY;
-                        f.hitY = true;
-                    } else {
-                        f.y += vy;
-                    }
-                } else {
-                    if (f.y + vy >= f.targetY) {
-                        f.y = f.targetY;
-                        f.hitY = true;
-                    } else {
-                        f.y += vy;
-                    }
-                }
+                if (Math.abs(f.y - f.targetY) < Math.abs(vy)) f.hitY = true;
+                else f.y += vy;
 
                 if (f.hitX && f.hitY) {
                     self.createParticles(f.targetX, f.targetY, f.hue);
@@ -283,7 +255,6 @@ $(function () {
             while (i--) {
                 var f = self.fireworks[i];
                 self.ctx.lineWidth = f.lineWidth;
-
                 var coordRand = rand(1, 3) - 1;
                 self.ctx.beginPath();
                 self.ctx.moveTo(
@@ -301,42 +272,6 @@ $(function () {
                     f.alpha +
                     ")";
                 self.ctx.stroke();
-
-                if (self.showTarget) {
-                    self.ctx.save();
-                    self.ctx.beginPath();
-                    self.ctx.arc(
-                        Math.round(f.targetX),
-                        Math.round(f.targetY),
-                        rand(1, 8),
-                        0,
-                        Math.PI * 2,
-                        false
-                    );
-                    self.ctx.closePath();
-                    self.ctx.lineWidth = 1;
-                    self.ctx.stroke();
-                    self.ctx.restore();
-                }
-
-                if (self.showShockwave) {
-                    self.ctx.save();
-                    self.ctx.translate(Math.round(f.x), Math.round(f.y));
-                    self.ctx.rotate(f.shockwaveAngle);
-                    self.ctx.beginPath();
-                    self.ctx.arc(0, 0, 1 * (f.speed / 5), 0, Math.PI, true);
-                    self.ctx.strokeStyle =
-                        "hsla(" +
-                        f.hue +
-                        ", 100%, " +
-                        f.brightness +
-                        "%, " +
-                        rand(25, 60) / 100 +
-                        ")";
-                    self.ctx.lineWidth = f.lineWidth;
-                    self.ctx.stroke();
-                    self.ctx.restore();
-                }
             }
         };
 
@@ -351,34 +286,14 @@ $(function () {
                 }, 100);
             });
 
-            $(self.canvas).on("mousedown", function (e) {
-                self.mx = e.pageX - self.canvas.offsetLeft;
-                self.my = e.pageY - self.canvas.offsetTop;
+            // ✨ Touch or cursor move par patakhe
+            $(self.canvas).on("mousemove touchmove", function (e) {
+                var touch = e.originalEvent.touches ? e.originalEvent.touches[0] : e;
+                self.mx = touch.pageX - self.canvas.offsetLeft;
+                self.my = touch.pageY - self.canvas.offsetTop;
                 self.currentHue = rand(self.hueMin, self.hueMax);
                 self.createFireworks(self.cw / 2, self.ch, self.mx, self.my);
-
-                $(self.canvas).on("mousemove.fireworks", function (e) {
-                    self.mx = e.pageX - self.canvas.offsetLeft;
-                    self.my = e.pageY - self.canvas.offsetTop;
-                    self.currentHue = rand(self.hueMin, self.hueMax);
-                    self.createFireworks(
-                        self.cw / 2,
-                        self.ch,
-                        self.mx,
-                        self.my
-                    );
-                });
             });
-
-            $(self.canvas).on("mouseup", function (e) {
-                $(self.canvas).off("mousemove.fireworks");
-            });
-        };
-
-        self.clear = function () {
-            self.particles = [];
-            self.fireworks = [];
-            self.ctx.clearRect(0, 0, self.cw, self.ch);
         };
 
         self.canvasLoop = function () {
@@ -396,9 +311,4 @@ $(function () {
     };
 
     var fworks = new Fireworks();
-
-    $("#info-toggle").on("click", function (e) {
-        $("#info-inner").stop(false, true).slideToggle(100);
-        e.preventDefault();
-    });
 });
