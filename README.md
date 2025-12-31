@@ -10,7 +10,7 @@ This project delivers a **cinematic Indian fireworks experience** with tricolor 
 ## 🎥 Live Animation Demo
 
 👉 **Live Demo:**  
-🔗 https://your-live-demo-link.vercel.app
+🔗 https://mdtaju0908.github.io/HAPPY_NEW_YEAR_2026/
 
 ```text
 📸 Tip:
